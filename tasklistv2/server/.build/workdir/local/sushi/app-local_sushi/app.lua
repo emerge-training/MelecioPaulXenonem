@@ -41373,7 +41373,7 @@ function app.TasklistConfig:getAllowedOrigins()
 	do return {
 		"http://localhost:8080",
 		"http://localhost:8081",
-		"http://ec2-54-254-54-51.ap-southeast-1.compute.amazonaws.com:30209"
+		"http://ec2-13-212-104-166.ap-southeast-1.compute.amazonaws.com:30206"
 	} end
 end
 
@@ -41395,54 +41395,6 @@ function app.TasklistConfig:getCorsUtil()
 		end
 	end
 	do return _g.jk.http.server.cors.HTTPServerCORSUtil:forWhitelist(allowed) end
-end
-
-app.TasklistAPIServer = _g.jk.server.web.WebServer._create()
-app.TasklistAPIServer.__index = app.TasklistAPIServer
-_vm:set_metatable(app.TasklistAPIServer, {
-	__index = _g.jk.server.web.WebServer
-})
-
-function app.TasklistAPIServer._create()
-	local v = _vm:set_metatable({}, app.TasklistAPIServer)
-	return v
-end
-
-function app.TasklistAPIServer:_init()
-	self._isClassInstance = true
-	self._qualifiedClassName = self._qualifiedClassName or 'app.TasklistAPIServer'
-	self['_isType.app.TasklistAPIServer'] = true
-end
-
-function app.TasklistAPIServer:_construct0()
-	app.TasklistAPIServer._init(self)
-	do _g.jk.server.web.WebServer._construct0(self) end
-	return self
-end
-
-function app.TasklistAPIServer:initializeServer(server)
-	if not _g.jk.server.web.WebServer.initializeServer(self, server) then
-		do return false end
-	end
-	do server:setCreateOptionsResponseHandler(function(req)
-	end) end
-	do return true end
-end
-
-function app.TasklistAPIServer:initializeApplication()
-	if not _g.jk.server.web.WebServer.initializeApplication(self) then
-		do return false end
-	end
-	do
-		local db = _g.app.TasklistDatabase:forContext(self.ctx)
-		do db:updateTables() end
-		do db:close() end
-		do return true end
-	end
-end
-
-function app.TasklistAPIServer:_main(args)
-	do return _g.app.TasklistAPIServer._construct0(_g.app.TasklistAPIServer._create()):setWorker("class:app.TasklistApiHandler"):executeMain(args) end
 end
 
 app.TasklistDatabase = {}
@@ -41625,10 +41577,10 @@ end
 
 function app.TasklistDatabase:forContext(ctx)
 	local cstr = _g.jk.env.EnvironmentVariable:get("TASK_DATABASE")
-	do _g.jk.log.Log:debug(ctx, "Opening databases connection: `" .. _g.jk.lang.String:safeString(cstr) .. "'") end
+	do _g.jk.log.Log:debug(ctx, "Opening database connection: " .. _g.jk.lang.String:safeString(cstr) .. "'") end
 	self.db = _g.jk.mysql.MySQLDatabase:forConnectionStringSync(ctx, cstr)
 	if not (self.db ~= nil) then
-		do _g.jk.lang.Error:throw("failedToConnectToDatabase", cstr) end
+		do _g.jk.lang.Error:throw("failedToConnectionToDatabase", cstr) end
 	end
 	do
 		local v = _g.app.TasklistDatabase._construct0(_g.app.TasklistDatabase._create())
@@ -41642,7 +41594,7 @@ function app.TasklistDatabase:updateTable(table)
 		do _g.jk.lang.Error:throw("nullTable", "updateTable") end
 	end
 	if not (self.db ~= nil) then
-		do _g.jk.lang.Error:throw("nullDb", "updateTable") end
+		do _g.jk.lang.Error:throw("nullDB", "updateTable") end
 	end
 	if not self.db:ensureTableExistsSync(table) then
 		do _g.jk.lang.Error:throw("failedToUpdateTable", table:getName()) end
@@ -41862,33 +41814,25 @@ end
 
 function app.TasklistApiHandler:initRoutes()
 	do _g.jk.http.worker.HTTPRPCRouter.initRoutes(self) end
-	do self:addRoute("GET", "/task", function(req, resp, vars)
+	do self:addRoute("GET", "/tasks", function(req, resp, vars)
+		local tasks = self:getDatabase():getTasks()
+		if not (tasks ~= nil) then
+			do return end
+		end
+		do self:setOkResponse(resp, tasks) end
 	end) end
 	do self:addRoute("POST", "/task", function(req, resp, vars)
-	end) end
-	do self:addRoute("PUT", "/task", function(req, resp, vars)
-	end) end
-	do self:addRoute("DELETE", "/task", function(req, resp, vars)
-	end) end
-	do self:addRoute("GET", "/task", function(req, resp, vars)
-		local task = self:getDatabase():getTasks()
-		if not (task ~= nil) then
-			do return end
-		end
-		do self:setOkResponse(resp, task) end
-	end) end
-	do self:addRoute("POST", "/task/:id", function(req, resp, vars)
 		local requestData = _g.app.TasklistApiHandler.TaskRequest:forJsonString(req:getBodyString())
 		if not (requestData ~= nil) then
-			do self:setErrorResponse(resp, "invalidRequest", "500") end
 			do return end
 		end
+		do self:setErrorResponse(resp, "invalidRequest", "500") end
 		do
 			local task = _g.app.TasklistDatabase.Task._construct0(_g.app.TasklistDatabase.Task._create())
 			do task:setName(requestData:getName()) end
 			do task:setDescription(requestData:getDescription()) end
 			if not (self:getDatabase():addTask(task) ~= nil) then
-				do self:setErrorResponse(resp, "faileToSaveTask", "500") end
+				do self:setErrorResponse(resp, "failedToSaveTask", "500") end
 				do return end
 			end
 			do self:setOkResponse(resp, nil) end
@@ -41905,7 +41849,7 @@ function app.TasklistApiHandler:initRoutes()
 			do task:setName(requestData:getName()) end
 			do task:setDescription(requestData:getDescription()) end
 			if not self:getDatabase():updateTask(vars:getString("id", nil), task) then
-				do self:setErrorResponse(resp, "failedToUpdateTask", "500") end
+				do self:setErrorResponse(resp, "FailedUpdateTask", "500") end
 				do return end
 			end
 			do self:setOkResponse(resp, nil) end
@@ -41920,6 +41864,55 @@ function app.TasklistApiHandler:initRoutes()
 	end) end
 end
 
+app.TasklistApiServer = _g.jk.server.web.WebServer._create()
+app.TasklistApiServer.__index = app.TasklistApiServer
+_vm:set_metatable(app.TasklistApiServer, {
+	__index = _g.jk.server.web.WebServer
+})
+
+function app.TasklistApiServer._create()
+	local v = _vm:set_metatable({}, app.TasklistApiServer)
+	return v
+end
+
+function app.TasklistApiServer:_init()
+	self._isClassInstance = true
+	self._qualifiedClassName = self._qualifiedClassName or 'app.TasklistApiServer'
+	self['_isType.app.TasklistApiServer'] = true
+end
+
+function app.TasklistApiServer:_construct0()
+	app.TasklistApiServer._init(self)
+	do _g.jk.server.web.WebServer._construct0(self) end
+	return self
+end
+
+function app.TasklistApiServer:initializeServer(server)
+	if not _g.jk.server.web.WebServer.initializeServer(self, server) then
+		do return false end
+	end
+	do server:setCreateOptionsResponseHandler(function(req)
+		do return _g.app.TasklistConfig:getCorsUtil():handlePreflightRequest(req) end
+	end) end
+	do return true end
+end
+
+function app.TasklistApiServer:initializeApplication()
+	if not _g.jk.server.web.WebServer.initializeApplication(self) then
+		do return false end
+	end
+	do
+		local db = _g.app.TasklistDatabase:forContext(self.ctx)
+		do db:updateTables() end
+		do db:close() end
+		do return true end
+	end
+end
+
+function app.TasklistApiServer:_main(args)
+	do return _g.app.TasklistApiServer._construct0(_g.app.TasklistApiServer._create()):setWorker("class:app.TasklistApiHandler"):executeMain(args) end
+end
+
 function _main(args)
-	do return app.TasklistAPIServer:_main(args) end
+	do return app.TasklistApiServer:_main(args) end
 end

@@ -5,24 +5,8 @@ class is HTTPRPCRouter #webapi2:
 
 model TaskRequest
 {
-    name as string 
+    name as string
     description as string
-}
-
-GET "/task"
-{
-}
-
-POST "/task"
-{   
-}
-
-PUT "/task"
-{   
-}
-
-DELETE "/task"
-{    
 }
 
 var db as TasklistDatabase
@@ -34,28 +18,27 @@ func getDatabase as TasklistDatabase
         db = TasklistDatabase.forContext(getCtx())
         db.updateTables()
     }
-
     return db
 }
 
 func postProcess(req as HTTPWorkerRequest, resp as HTTPWorkerResponse) override:
     cors.handleWorkerRequest(req, resp)
 
-GET "/task"
+GET "/tasks"
 {
-    var task = assert getDatabase().getTasks()
-    sendOk task
+    var tasks = assert getDatabase().getTasks()
+    sendOk tasks
 }
 
-POST "/task/:id"
+POST "/task"
 {
-    var requestData = assert TaskRequest.forJsonString(req.getBodyString()):
+    var requestData = assert TaskRequest.forJsonString(req.getBodyString())
         sendError "invalidRequest"
     var task = new TasklistDatabase.Task()
     task.setName(requestData.getName())
     task.setDescription(requestData.getDescription())
     assert getDatabase().addTask(task):
-        sendError "faileToSaveTask"
+        sendError "failedToSaveTask"
     sendOk
 }
 
@@ -66,9 +49,9 @@ PUT "/task/:id"
     var task = new TasklistDatabase.Task()
     task.setName(requestData.getName())
     task.setDescription(requestData.getDescription())
-    assert getDatabase().updateTask(vars.getString("id"),task):
-        sendError "failedToUpdateTask"
-    sendOk    
+    assert getDatabase().updateTask(vars.getString("id"), task):
+        sendError "FailedUpdateTask"
+        sendOk
 }
 
 DELETE "/task/:id"

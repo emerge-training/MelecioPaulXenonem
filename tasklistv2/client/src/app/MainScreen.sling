@@ -4,7 +4,7 @@ import jk.widget.common
 class is ScreenForWidget #screen #main:
 
 var navi as NavigationWidget
-
+    
 func initialize override
 {
     base.initialize()
@@ -12,6 +12,6 @@ func initialize override
     navi.setWidgetEnableActionBar(false)
     setWidget(navi)
     APIClient.create(context, navi)
-    navi.pushWidget(new TaskList(context))
-   
+    navi.pushWidget(new Tasklist(context))
 }
+

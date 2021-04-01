@@ -1,4 +1,13 @@
-class name app.TaskList header implements jk.widget.TitledWidget extends jk.widget.LayerWidget public #widget
+class name app.MainScreen header extends jk.widget.ScreenForWidget public
+{
+	import jk.lang
+	import jk.widget
+	import jk.widget.common
+	ctor
+	func initialize override
+	func main(args as array<string>) static as int #main
+}
+class name app.Tasklist header implements jk.widget.TitledWidget extends jk.widget.LayerWidget public #widget
 {
 	import jk.lang
 	import jk.lang
@@ -10,15 +19,6 @@ class name app.TaskList header implements jk.widget.TitledWidget extends jk.widg
 	func initializeWidget override
 	func getWidgetTitle as string
 	func createWidget override
-}
-class name app.MainScreen header extends jk.widget.ScreenForWidget public
-{
-	import jk.lang
-	import jk.widget
-	import jk.widget.common
-	ctor
-	func initialize override
-	func main(args as array<string>) static as int #main
 }
 class name app.APIClient header extends jk.widget.web.JSONAPIClientWithGui public
 {

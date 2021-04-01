@@ -3,14 +3,15 @@ import jk.server.web
 
 class is WebServer:
 
-
 func initializeServer(server as HTTPServer) override as bool
 {
     assert base.initializeServer(server)
-    server.setCreateOptionsResponseHandler(func(req as HTTPServerRequest) as HTTPServerResponse{
+    server.setCreateOptionsResponseHandler(func(req as HTTPServerRequest) as HTTPServerResponse {
+        return TasklistConfig.getCorsUtil().handlePreflightRequest(req)
     })
     return true
 }
+
 
 func initializeApplication override as bool
 {
@@ -22,5 +23,4 @@ func initializeApplication override as bool
 }
 
 main:
-    return  new this().setWorker(typeinfo  TasklistApiHandler).executeMain(args) 
-    
+    return new this().setWorker(typeinfo TasklistApiHandler).executeMain(args)

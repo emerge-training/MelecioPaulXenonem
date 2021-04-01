@@ -7,15 +7,6 @@ class name app.TasklistConfig header public
 	func getAllowedOrigins as array
 	func getCorsUtil as jk.http.server.cors.HTTPServerCORSUtil
 }
-class name app.TasklistAPIServer header extends jk.server.web.WebServer public
-{
-	import jk.lang
-	import jk.http.server
-	import jk.server.web
-	ctor
-	func initializeServer(server as jk.http.server.HTTPServer) override as bool
-	func initializeApplication override as bool
-}
 class name app.TasklistDatabase header public
 {
 	import jk.lang
@@ -89,4 +80,13 @@ class name app.TasklistApiHandler header extends jk.http.worker.HTTPRPCRouter pu
 	func getDatabase as app.TasklistDatabase
 	func postProcess(req as jk.http.worker.HTTPWorkerRequest, resp as jk.http.worker.HTTPWorkerResponse) override
 	func initRoutes override
+}
+class name app.TasklistApiServer header extends jk.server.web.WebServer public
+{
+	import jk.lang
+	import jk.http.server
+	import jk.server.web
+	ctor
+	func initializeServer(server as jk.http.server.HTTPServer) override as bool
+	func initializeApplication override as bool
 }
