@@ -1,0 +1,100 @@
+import jk.log
+import jk.sqlite
+import jk.mysql
+import jk.sql
+import jk.env
+import jk.time
+
+class:
+
+model Note
+{
+    id as string
+    note as string
+    timeStampAdded as long
+    timeStampLastUpdated as long
+}
+
+const TABLE = "notes"
+pvar db as MySQLDatabase
+
+func forContext(ctx as LoggingContext) static as this
+{
+    var cstr = EnvironmentVariable.get("NOTES_DATABASE")
+    Log.debug(ctx, "Opening database connection: '" .. cstr .. "'")
+    db = MySQLDatabase.forConnectionStringSync(ctx, cstr)
+    if not db:
+        Error.throw("failedToConnectToDatabase", cstr)
+    var v = new this()
+    v.setDb(db)
+    return v
+}
+
+func updateTable(table as SQLTableInfo)
+{
+    if not table:
+        Error.throw("nullTable","updateTable")
+    if not db:
+        Error.throw("nullDb", "updateTable")
+    if not db.ensureTableExistsSync(table):
+        Error.throw("failedToUpdateTable", table.getName())
+}
+
+func updateTables
+{
+    var tbl = SQLTableInfo.forName(TABLE)
+    tbl.addStringKeyColumn("id")
+    tbl.addStringColumn("note")
+    updateTable(tbl)
+}
+
+func addValue(tbl as Note) as Note
+{
+    assert tbl
+    tbl.setId("1")
+    tbl.setTimeStampAddedValue(SystemClock.asUTCSeconds())
+    assert db.executeSync(db.prepareInsertStatementSync(TABLE, tbl.toDynamicMap()))
+    return tbl
+}
+
+func updateValue(id as string, tbl as Note) as bool
+{
+    assert tbl
+    tbl.setTimeStampLastUpdatedValue(SystemClock.asUTCSeconds())
+    var criteria = new Note()
+    criteria.setId(id)
+    return db.executeSync(db.prepareUpdateStatementSync(TABLE, criteria.toDynamicMap(), tbl.toDynamicMap()))
+}
+
+func deleteValue(id as string) as bool
+{
+    var criteria = new Note()
+    criteria.setId(id)
+    return db.executeSync(db.prepareDeleteStatementSync(TABLE, criteria.toDynamicMap()))
+}
+
+func getValues as DynamicMap
+{
+    var v = new vector<Note>
+    var it = assert db.querySync(db.prepareQueryAllStatementSync(TABLE))
+        return null
+    while it{
+        var o = it.next()
+        if not o:
+            break
+        var tbl = Note.forJsonObject(o)
+        if not tbl:
+            continue
+        v += tbl
+    }
+    var data = new DynamicMap()
+    data.setObject("records", v)
+    return data
+}
+
+func close
+{
+    if db:
+        db.closeSync()
+    db = null
+}
