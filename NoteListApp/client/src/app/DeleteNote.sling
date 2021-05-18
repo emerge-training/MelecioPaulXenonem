@@ -1,0 +1,97 @@
+import jk.widget.common
+import jk.widget.datagrid
+
+class #widget:
+
+model Note
+{
+    id as string
+    activity as string
+    description as string
+}
+
+
+ui LayerWidget
+{
+	CanvasWidget {
+		color = Color.instance("#EBDEF0")
+	}
+	VerticalScrollerWidget {
+		AlignWidget {
+			marginLeft = 400
+			marginRight = 400
+			VerticalBoxWidget vbox : 0.5, 0.5, true {
+				margin = context.getHeightValue("5000um")
+				spacing = context.getHeightValue("2000um")
+				LabelWidget {
+					text = "Delete Note"
+					textColor = Color.black()
+					fontSize = context.getHeightValue("6mm")
+					textAlign = LabelWidget.ALIGN_CENTER
+					fontBold = true
+				}
+                DataGridWidget grid : 1 {
+
+				}
+                TextInputWidget id {
+					type = TextInputWidget.TYPE_INTEGER
+					placeholder = "Input ID to Delete"
+					backgroundColor = Color.white()
+					fontSize = context.getHeightValue("3mm")
+					padding = context.getHeightValue("2500um")
+				}
+			}
+		}
+	}
+}
+func initializeWidget override
+{
+		base.initializeWidget()
+    grid.addColumn("ID", "id", 0.2)
+	grid.addColumn("Activity", "activity", 0.5)
+	grid.addColumn("Description", "description", 0.5)
+
+	
+	grid.addWidgetHeaderRow()
+	APIClient.getInstance().getNotes(func(response as DynamicMap){
+		var data = assert response.getDynamicMap("data")
+        var records = data.getDynamicVector("records")
+        if not records || records.getSize() < 1{
+
+		}
+		else {
+			foreach record as DynamicMap in records.toVector(){
+				grid.addRow([record.getString("id"),record.getString("activity"),record.getString("description")])
+			}
+		}
+	})
+
+	var deleted = ButtonWidget.forText(context, "Delete", func{
+		APIClient.getInstance().deleteNote(id.getWidgetText(), func(res as DynamicMap){
+			context.showMessageDialog("Notice", "Successfully Deleted")
+			id.setWidgetText("")
+            NavigationWidget.switchToContainer(this, new DeleteNote(context))
+		}, func(err as Error){
+			context.showMessageDialog("Notice", "Failed Deleted")
+		})
+	})	
+
+    var menu = ButtonWidget.forText(context, "Back to Main", func{
+	    NavigationWidget.switchToContainer(this, new MenuNote(context))
+	})	
+
+	
+	deleted.setWidgetBackgroundColor(Color.instance("#7D0552"))
+	deleted.setWidgetTextColor(Color.white())
+	deleted.setWidgetFontSize(context.getHeightValue("4mm"))
+	vbox.addWidget(deleted) 
+
+
+	menu.setWidgetBackgroundColor(Color.instance("#C71585"))
+	menu.setWidgetTextColor(Color.white())
+	menu.setWidgetFontSize(context.getHeightValue("4mm"))
+	vbox.addWidget(menu)
+
+
+
+}

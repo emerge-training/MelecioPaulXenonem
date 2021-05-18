@@ -1,0 +1,74 @@
+import jk.widget
+import jk.widget.common
+import jk.widget.datagrid
+
+class #widget:
+
+ui LayerWidget
+{
+	CanvasWidget {
+		color = Color.instance("#EBDEF0")
+	}
+	VerticalScrollerWidget {
+		AlignWidget {
+			marginLeft = 500
+			marginRight = 500
+			VerticalBoxWidget vbox : 0.5, 0.5, true {
+				spacing = context.getHeightValue("2000um")
+				margin = context.getHeightValue("1000um")
+				LabelWidget {
+					text = "Menu Note App List"
+					textColor = Color.black()
+					fontSize = context.getHeightValue("5mm")
+					textAlign = LabelWidget.ALIGN_CENTER
+					fontBold = true
+				}
+				ButtonWidget create {
+					text = "Create Note"
+					backgroundColor = Color.instance("#E56E94")
+					textColor = Color.white()
+					fontSize = context.getHeightValue("4mm")
+					clickHandler = func{
+						NavigationWidget.switchToContainer(this, new AddNote(context))
+					}
+				}
+				ButtonWidget read {
+					text = "Read Note"
+					textColor = Color.white()
+					backgroundColor = Color.instance("#F660AB")
+					fontSize = context.getHeightValue("4mm")
+					clickHandler = func{
+						NavigationWidget.switchToContainer(this, new ReadNote(context))
+					}
+				}
+				
+				ButtonWidget update {
+					text = "Update Note"
+					textColor = Color.white()
+					backgroundColor = Color.instance("#FC6C85")
+					fontSize = context.getHeightValue("4mm")
+					clickHandler = func{
+						NavigationWidget.switchToContainer(this, new UpdateNote(context))
+					}
+				}
+			
+				ButtonWidget delete {
+					text = "Delete Tasklist"
+					textColor = Color.white()
+					backgroundColor = Color.instance("#7D0552")
+					fontSize = context.getHeightValue("4mm")
+					clickHandler = func{
+						NavigationWidget.switchToContainer(this, new DeleteNote(context))
+					}
+				}
+				
+			}
+		}
+	}
+}
+
+func initializeWidget override
+{
+	base.initializeWidget()
+}
+

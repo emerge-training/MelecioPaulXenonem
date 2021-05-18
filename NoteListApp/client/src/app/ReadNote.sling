@@ -1,0 +1,66 @@
+import jk.widget
+import jk.widget.common
+import jk.widget.datagrid
+
+class #widget:
+
+
+ui LayerWidget
+{
+	CanvasWidget {
+		color = Color.instance("#EBDEF0")
+	}
+	VerticalScrollerWidget {
+		AlignWidget {
+			marginLeft = 100
+			marginRight = 100
+			VerticalBoxWidget vbox : 0.5, 0.5, true {
+				margin = context.getHeightValue("5000um")
+				spacing = context.getHeightValue("2000um")
+				LabelWidget {
+					text = "Note List"
+					textColor = Color.black()
+					fontSize = context.getHeightValue("8mm")
+					textAlign = LabelWidget.ALIGN_CENTER
+					fontBold = true
+				}
+				DataGridWidget grid : 1 {
+
+				}
+				ButtonWidget toDashboard {
+					text = "Back to Main"
+					textColor = Color.white()
+					backgroundColor = Color.instance("#C71585")
+					fontSize = context.getHeightValue("4mm")
+					clickHandler = func {
+						NavigationWidget.switchToContainer(this, new MenuNote(context))
+					}
+				}
+				
+			}
+		}
+	}
+}
+
+func initializeWidget override
+{
+	base.initializeWidget()
+	grid.addColumn("ID", "id", 0.2)
+	grid.addColumn("Activity", "activity", 0.5)
+	grid.addColumn("Description", "description", 0.5)
+
+	
+	grid.addWidgetHeaderRow()
+	APIClient.getInstance().getNotes(func(response as DynamicMap){
+		var data = assert response.getDynamicMap("data")
+        var records = data.getDynamicVector("records")
+        if not records || records.getSize() < 1{
+
+		}
+		else {
+			foreach record as DynamicMap in records.toVector(){
+				grid.addRow([record.getString("id"),record.getString("activity"),record.getString("description")])
+			}
+		}
+	})
+}

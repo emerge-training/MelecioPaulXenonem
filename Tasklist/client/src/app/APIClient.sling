@@ -37,14 +37,14 @@ func onDefaultErrorHandler(error as Error) override
     widgetDefaultErrorHandler(error)
 }
 
-func addNote(data as DynamicMap, callback as function<void, DynamicMap>, errorCallback as function<void, Error>):
-    doPost("/note", data, callback, errorCallback)
+func addTask(data as DynamicMap, callback as function<void, DynamicMap>, errorCallback as function<void, Error>):
+    doPost("/task", data, callback, errorCallback)
 
-func updateNote(id as string, data as DynamicMap, callback as function<void, DynamicMap>, errorCallback as function<void, Error>):
-    doPut("/note/" .. id, data, callback, errorCallback)
+func updateTask(id as string, data as DynamicMap, callback as function<void, DynamicMap>, errorCallback as function<void, Error>):
+    doPut("/task/" .. id, data, callback, errorCallback)
 
-func deleteNote(id as string, callback as function<void, DynamicMap>, errorCallback as function<void, Error>):
-    doDelete("/note/" .. id, callback, errorCallback)
+func deleteTask(id as string, callback as function<void, DynamicMap>, errorCallback as function<void, Error>):
+    doDelete("/task/" .. id, callback, errorCallback)
 
-func getNotes(callback as function<void, DynamicMap>, errorCallback as function<void, Error> = null):
-    doGet("/notes", callback, errorCallback)
+func getTasks(callback as function<void, DynamicMap>, errorCallback as function<void, Error> = null):
+    doGet("/tasks", callback, errorCallback)
